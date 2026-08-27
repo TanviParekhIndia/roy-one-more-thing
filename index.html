@@ -214,7 +214,10 @@ function go(n,opening=false){
 function finishExperience(){
     document.getElementById("nav").style.opacity="0";
     document.getElementById("nav").style.pointerEvents="none";
-    document.body.classList.add("ending");
+
+    setTimeout(function(){
+        document.body.classList.add("ending");
+    }, 2000);
 }
 
 function confetti(){
