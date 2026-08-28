@@ -84,6 +84,13 @@ body.ending .screen {
 </head>
 
 <body>
+<audio id="bgMusic" preload="auto" loop>
+<source src="the_mountain-farewell-piano-146119.mp3" type="audio/mpeg">
+</audio>
+<audio id="clickSound" preload="auto">
+<source src="matthewvakaliuk73627-mouse-click-290204.mp3" type="audio/mpeg">
+</audio>
+
 
 <div class="screen active" id="s0">
 <div class="card center">
@@ -170,7 +177,7 @@ body.ending .screen {
 </div>
 </div>
 
-<div class="nav" id="nav">
+<div class="nav hidden" id="nav">
 <button class="nav-btn" id="back" onclick="go(current-1)" disabled>← Back</button>
 <div class="progress" id="progress"></div>
 <button class="nav-btn primary" id="next" onclick="go(current+1)">Next →</button>
@@ -206,18 +213,24 @@ function go(n,opening=false){
     document.getElementById("s"+current).classList.remove("active");
     current=n;
     document.getElementById("s"+current).classList.add("active");
+
+    // Navigation is hidden only on the opening screen.
+    // As soon as Roy opens the surprise, show Back/Next navigation.
+    if(current > 0){
+        document.getElementById("nav").classList.remove("hidden");
+    }
+
     updateNav();
 
     if(opening || current===total-1) confetti();
 }
 
 function finishExperience(){
+    clickSound();
+    stopFarewellMusic();
     document.getElementById("nav").style.opacity="0";
     document.getElementById("nav").style.pointerEvents="none";
-
-    setTimeout(function(){
-        document.body.classList.add("ending");
-    }, 1000);
+    document.body.classList.add("ending");
 }
 
 function confetti(){
@@ -240,6 +253,53 @@ document.addEventListener("keydown",e=>{
 });
 
 updateNav();
+
+const bgMusic = document.getElementById("bgMusic");
+const clickAudio = document.getElementById("clickSound");
+
+if (bgMusic) {
+    bgMusic.volume = 0.32;
+}
+if (clickAudio) {
+    clickAudio.volume = 0.65;
+}
+
+function clickSound() {
+    if (!clickAudio) return;
+    clickAudio.currentTime = 0;
+    clickAudio.play().catch(() => {});
+}
+
+function startFarewellMusic() {
+    if (!bgMusic) return;
+    bgMusic.volume = 0;
+    const playPromise = bgMusic.play();
+    if (playPromise) {
+        playPromise.then(() => {
+            let v = 0;
+            const fade = setInterval(() => {
+                v += 0.02;
+                bgMusic.volume = Math.min(0.32, v);
+                if (v >= 0.32) clearInterval(fade);
+            }, 100);
+        }).catch(() => {});
+    }
+}
+
+function stopFarewellMusic() {
+    if (!bgMusic) return;
+    let v = bgMusic.volume;
+    const fade = setInterval(() => {
+        v -= 0.025;
+        bgMusic.volume = Math.max(0, v);
+        if (v <= 0) {
+            clearInterval(fade);
+            bgMusic.pause();
+            bgMusic.currentTime = 0;
+        }
+    }, 100);
+}
+
 </script>
 
 </body>
